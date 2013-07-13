@@ -178,13 +178,6 @@ void MinXmlHttpRequest::handle_requestResponse(cocos2d::extension::HttpClient *s
     char statusString[64] = {};
     sprintf(statusString, "HTTP Status Code: %d, tag = %s", statusCode, response->getHttpRequest()->getTag());
     
-    if (!response->isSucceed())
-    {
-        CCLOG("response failed");
-        CCLOG("error buffer: %s", response->getErrorBuffer());
-        return;
-    }
-    
     // set header
     std::vector<char> *headers = response->getResponseHeader();
     
@@ -205,18 +198,10 @@ void MinXmlHttpRequest::handle_requestResponse(cocos2d::extension::HttpClient *s
     
     strcpy(concatenated, s2.c_str());
     
-    if (statusCode == 200)
-    {
-        //Succeeded
-        status = 200;
-        readyState = DONE;
-        data << concatenated;
-        
-    }
-    else
-    {
-        status = 0;
-    }
+    status = statusCode;
+    readyState = DONE;
+    data << concatenated;
+    
     // Free Memory.
     free((void*) concatHeader);
     free((void*) concatenated);
