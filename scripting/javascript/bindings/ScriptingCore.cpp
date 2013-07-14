@@ -1535,6 +1535,9 @@ JSBool jsval_to_ccdictionary(JSContext* cx, jsval v, Dictionary** ret) {
 //                CCLOG("iterate object: key = %s, value = %d", keyWrapper.get().c_str(), boolVal);
             }
         }
+        else if (value.isNullOrUndefined()) {
+            // ignore null values
+        }
         else {
             CCAssert(false, "not supported type");
         }
