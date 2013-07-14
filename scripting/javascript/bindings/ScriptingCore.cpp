@@ -929,6 +929,7 @@ JSBool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, ui
     
     do
     {
+        JSAutoCompartment ac(cx, obj);
         if (JS_HasProperty(cx, obj, name, &hasAction) && hasAction) {
             if (!JS_GetProperty(cx, obj, name, &temp_retval)) {
                 break;
@@ -937,7 +938,6 @@ JSBool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, ui
                 break;
             }
             
-            JSAutoCompartment ac(cx, obj);
             if (retVal) {
                 bRet = JS_CallFunctionName(cx, obj, name, argc, vp, retVal);
             }
@@ -1607,7 +1607,7 @@ JSBool jsval_to_ccdictionary(JSContext* cx, jsval v, Dictionary** ret) {
     }
     
     JSObject* it = JS_NewPropertyIterator(cx, tmp);
-    Dictionary* dict = NULL;
+    Dictionary* dict = Dictionary::create();
 
     while (true)
     {
@@ -1681,6 +1681,9 @@ JSBool jsval_to_ccdictionary(JSContext* cx, jsval v, Dictionary** ret) {
                 dict->setObject(Bool::create(boolVal), keyWrapper.get());
 //                CCLOG("iterate object: key = %s, value = %d", keyWrapper.get().c_str(), boolVal);
             }
+        }
+        else if (value.isNullOrUndefined()) {
+            // ignore null values
         }
         else {
             CCASSERT(false, "not supported type");
