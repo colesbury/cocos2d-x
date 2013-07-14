@@ -406,8 +406,8 @@ static CCEAGLView *view = 0;
     int i = 0;
     for (UITouch *touch in touches) {
         ids[i] = (int)touch;
-        xs[i] = [touch locationInView: [touch view]].x * view.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * view.contentScaleFactor;;
+        xs[i] = [touch locationInView: self].x * view.contentScaleFactor;;
+        ys[i] = [touch locationInView: self].y * view.contentScaleFactor;;
         ++i;
     }
     cocos2d::EGLView::getInstance()->handleTouchesBegin(i, ids, xs, ys);
@@ -426,8 +426,8 @@ static CCEAGLView *view = 0;
     int i = 0;
     for (UITouch *touch in touches) {
         ids[i] = (int)touch;
-        xs[i] = [touch locationInView: [touch view]].x * view.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * view.contentScaleFactor;;
+        xs[i] = [touch locationInView: self].x * view.contentScaleFactor;;
+        ys[i] = [touch locationInView: self].y * view.contentScaleFactor;;
         ++i;
     }
     cocos2d::EGLView::getInstance()->handleTouchesMove(i, ids, xs, ys);
@@ -447,8 +447,8 @@ static CCEAGLView *view = 0;
     int i = 0;
     for (UITouch *touch in touches) {
         ids[i] = (int)touch;
-        xs[i] = [touch locationInView: [touch view]].x * view.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * view.contentScaleFactor;;
+        xs[i] = [touch locationInView: self].x * view.contentScaleFactor;;
+        ys[i] = [touch locationInView: self].y * view.contentScaleFactor;;
         ++i;
     }
     cocos2d::EGLView::getInstance()->handleTouchesEnd(i, ids, xs, ys);
@@ -468,8 +468,8 @@ static CCEAGLView *view = 0;
     int i = 0;
     for (UITouch *touch in touches) {
         ids[i] = (int)touch;
-        xs[i] = [touch locationInView: [touch view]].x * view.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * view.contentScaleFactor;;
+        xs[i] = [touch locationInView: self].x * view.contentScaleFactor;;
+        ys[i] = [touch locationInView: self].y * view.contentScaleFactor;;
         ++i;
     }
     cocos2d::EGLView::getInstance()->handleTouchesCancel(i, ids, xs, ys);
