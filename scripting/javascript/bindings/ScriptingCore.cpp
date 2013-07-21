@@ -1460,7 +1460,7 @@ JSBool jsval_to_ccdictionary(JSContext* cx, jsval v, Dictionary** ret) {
     }
     
     JSObject* it = JS_NewPropertyIterator(cx, tmp);
-    Dictionary* dict = NULL;
+    Dictionary* dict = Dictionary::create();
 
     while (true)
     {
