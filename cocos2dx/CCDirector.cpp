@@ -1064,6 +1064,10 @@ void DisplayLinkDirector::startAnimation(void)
 
 void DisplayLinkDirector::mainLoop(void)
 {
+    static bool inMainLoop = false;
+    CCAssert(!inMainLoop, "Already in main loop");
+    inMainLoop = true;
+    
     if (_purgeDirecotorInNextLoop)
     {
         _purgeDirecotorInNextLoop = false;
@@ -1076,6 +1080,8 @@ void DisplayLinkDirector::mainLoop(void)
          // release the objects
          PoolManager::sharedPoolManager()->pop();        
      }
+    
+    inMainLoop = false;
 }
 
 void DisplayLinkDirector::stopAnimation(void)
