@@ -63,7 +63,7 @@ THE SOFTWARE.
 
 /**
  Position of the FPS
- 
+
  Default: 0,0 (bottom-left corner)
  */
 #ifndef CC_DIRECTOR_STATS_POSITION
@@ -127,11 +127,11 @@ bool Director::init(void)
 
     // paused ?
     _paused = false;
-   
+
     // purge ?
     _purgeDirecotorInNextLoop = false;
 
-    _winSizeInPoints = Size::ZERO;    
+    _winSizeInPoints = Size::ZERO;
 
     _openGLView = nullptr;
 
@@ -148,7 +148,7 @@ bool Director::init(void)
 
     return true;
 }
-    
+
 Director::~Director(void)
 {
     CCLOGINFO("deallocing Director: %p", this);
@@ -156,7 +156,7 @@ Director::~Director(void)
     CC_SAFE_RELEASE(_FPSLabel);
     CC_SAFE_RELEASE(_SPFLabel);
     CC_SAFE_RELEASE(_drawsLabel);
-    
+
     CC_SAFE_RELEASE(_runningScene);
     CC_SAFE_RELEASE(_notificationNode);
     CC_SAFE_RELEASE(_scenesStack);
@@ -230,7 +230,7 @@ void Director::setGLDefaultValues()
 void Director::drawScene()
 {
     Node::resetEventPriorityIndex();
-    
+
     // calculate "global" dt
     calculateDeltaTime();
 
@@ -267,7 +267,7 @@ void Director::drawScene()
     {
         _notificationNode->visit();
     }
-    
+
     if (_displayStats)
     {
         showStats();
@@ -282,7 +282,7 @@ void Director::drawScene()
     {
         _openGLView->swapBuffers();
     }
-    
+
     if (_displayStats)
     {
         calculateMPF();
@@ -343,14 +343,14 @@ void Director::setOpenGLView(EGLView *pobOpenGLView)
 
         // set size
         _winSizeInPoints = _openGLView->getDesignResolutionSize();
-        
+
         createStatsLabel();
-        
+
         if (_openGLView)
         {
             setGLDefaultValues();
-        }  
-        
+        }
+
         CHECK_GL_ERROR_DEBUG();
 
 //        _touchDispatcher->setDispatchEvents(true);
@@ -413,13 +413,13 @@ void Director::setProjection(Projection projection)
             kmGLMultMatrix(&matrixLookup);
             break;
         }
-            
+
         case Projection::CUSTOM:
             if (_projectionDelegate)
                 _projectionDelegate->updateProjection();
-            
+
             break;
-            
+
         default:
             CCLOG("cocos2d: Director: unrecognized projection");
             break;
@@ -479,10 +479,10 @@ static void GLToClipTransform(kmMat4 *transformOut)
 {
 	kmMat4 projection;
 	kmGLGetMatrix(KM_GL_PROJECTION, &projection);
-	
+
 	kmMat4 modelview;
 	kmGLGetMatrix(KM_GL_MODELVIEW, &modelview);
-	
+
 	kmMat4Multiply(transformOut, &projection, &modelview);
 }
 
@@ -490,19 +490,19 @@ Point Director::convertToGL(const Point& uiPoint)
 {
     kmMat4 transform;
 	GLToClipTransform(&transform);
-	
+
 	kmMat4 transformInv;
 	kmMat4Inverse(&transformInv, &transform);
-	
+
 	// Calculate z=0 using -> transform*[0, 0, 0, 1]/w
 	kmScalar zClip = transform.mat[14]/transform.mat[15];
-	
+
     Size glSize = _openGLView->getDesignResolutionSize();
 	kmVec3 clipCoord = {2.0f*uiPoint.x/glSize.width - 1.0f, 1.0f - 2.0f*uiPoint.y/glSize.height, zClip};
-	
+
 	kmVec3 glCoord;
 	kmVec3TransformCoord(&glCoord, &clipCoord, &transformInv);
-	
+
 	return Point(glCoord.x, glCoord.y);
 }
 
@@ -510,12 +510,12 @@ Point Director::convertToUI(const Point& glPoint)
 {
     kmMat4 transform;
 	GLToClipTransform(&transform);
-    
+
 	kmVec3 clipCoord;
 	// Need to calculate the zero depth from the transform.
 	kmVec3 glCoord = {glPoint.x, glPoint.y, 0.0};
 	kmVec3TransformCoord(&clipCoord, &glCoord, &transform);
-	
+
 	Size glSize = _openGLView->getDesignResolutionSize();
 	return Point(glSize.width*(clipCoord.x*0.5 + 0.5), glSize.height*(-clipCoord.y*0.5 + 0.5));
 }
@@ -536,7 +536,7 @@ Size Director::getVisibleSize() const
     {
         return _openGLView->getVisibleSize();
     }
-    else 
+    else
     {
         return Size::ZERO;
     }
@@ -548,7 +548,7 @@ Point Director::getVisibleOrigin() const
     {
         return _openGLView->getVisibleOrigin();
     }
-    else 
+    else
     {
         return Point::ZERO;
     }
@@ -656,7 +656,7 @@ void Director::purgeDirector()
 {
     // cleanup scheduler
     getScheduler()->unscheduleAll();
-    
+
     // don't release the event handlers
     // They are needed in case the director is run again
 //    _touchDispatcher->removeAllDelegates();
@@ -668,7 +668,7 @@ void Director::purgeDirector()
         _runningScene->cleanup();
         _runningScene->release();
     }
-    
+
     _runningScene = nullptr;
     _nextScene = nullptr;
 
@@ -698,11 +698,11 @@ void Director::purgeDirector()
     UserDefault::destroyInstance();
     NotificationCenter::destroyInstance();
     EventDispatcher::destroyInstance();
-    
+
     GL::invalidateStateCache();
-    
+
     CHECK_GL_ERROR_DEBUG();
-    
+
     // OpenGL view
     if (_openGLView)
     {
@@ -727,7 +727,7 @@ void Director::setNextScene()
              _runningScene->onExitTransitionDidStart();
              _runningScene->onExit();
          }
- 
+
          // issue #709. the root node (scene) should receive the cleanup message too
          // otherwise it might be leaked.
          if (_sendCleanupToScene && _runningScene)
@@ -789,7 +789,7 @@ void Director::showStats()
 {
     ++_frames;
     _accumDt += _deltaTime;
-    
+
     if (_displayStats)
     {
         if (_FPSLabel && _SPFLabel && _drawsLabel)
@@ -798,24 +798,24 @@ void Director::showStats()
             {
                 sprintf(_FPS, "%.3f", _secondsPerFrame);
                 _SPFLabel->setString(_FPS);
-                
+
                 _frameRate = _frames / _accumDt;
                 _frames = 0;
                 _accumDt = 0;
-                
+
                 sprintf(_FPS, "%.1f", _frameRate);
                 _FPSLabel->setString(_FPS);
-                
+
                 sprintf(_FPS, "%4lu", (unsigned long)g_uNumberOfDraws);
                 _drawsLabel->setString(_FPS);
             }
-            
+
             _drawsLabel->visit();
             _FPSLabel->visit();
             _SPFLabel->visit();
         }
-    }    
-    
+    }
+
     g_uNumberOfDraws = 0;
 }
 
@@ -823,14 +823,14 @@ void Director::calculateMPF()
 {
     struct timeval now;
     gettimeofday(&now, nullptr);
-    
+
     _secondsPerFrame = (now.tv_sec - _lastUpdate->tv_sec) + (now.tv_usec - _lastUpdate->tv_usec) / 1000000.0f;
 }
 
 // returns the FPS image data pointer and len
 void Director::getFPSImageData(unsigned char** datapointer, unsigned int* length)
 {
-    // XXX fixed me if it should be used 
+    // XXX fixed me if it should be used
     *datapointer = cc_fps_images_png;
 	*length = cc_fps_images_len();
 }
@@ -866,16 +866,16 @@ void Director::createStatsLabel()
     CC_SAFE_RELEASE(image);
 
     /*
-     We want to use an image which is stored in the file named ccFPSImage.c 
-     for any design resolutions and all resource resolutions. 
-     
+     We want to use an image which is stored in the file named ccFPSImage.c
+     for any design resolutions and all resource resolutions.
+
      To achieve this,
-     
+
      Firstly, we need to ignore 'contentScaleFactor' in 'AtlasNode' and 'LabelAtlas'.
      So I added a new method called 'setIgnoreContentScaleFactor' for 'AtlasNode',
      this is not exposed to game developers, it's only used for displaying FPS now.
-     
-     Secondly, the size of this image is 480*320, to display the FPS label with correct size, 
+
+     Secondly, the size of this image is 480*320, to display the FPS label with correct size,
      a factor of design resolution ratio of 480x320 is also needed.
      */
     float factor = EGLView::getInstance()->getDesignResolutionSize().height / 320.0f;
@@ -916,9 +916,9 @@ void Director::setContentScaleFactor(float scaleFactor)
     }
 }
 
-Node* Director::getNotificationNode() 
-{ 
-    return _notificationNode; 
+Node* Director::getNotificationNode()
+{
+    return _notificationNode;
 }
 
 void Director::setNotificationNode(Node *node)
@@ -960,7 +960,7 @@ void Director::setActionManager(ActionManager* actionManager)
         CC_SAFE_RETAIN(actionManager);
         CC_SAFE_RELEASE(_actionManager);
         _actionManager = actionManager;
-    }    
+    }
 }
 
 ActionManager* Director::getActionManager() const
@@ -990,6 +990,10 @@ void DisplayLinkDirector::startAnimation()
 
 void DisplayLinkDirector::mainLoop()
 {
+    static bool inMainLoop = false;
+    CCAssert(!inMainLoop, "Already in main loop");
+    inMainLoop = true;
+
     if (_purgeDirecotorInNextLoop)
     {
         _purgeDirecotorInNextLoop = false;
@@ -998,10 +1002,12 @@ void DisplayLinkDirector::mainLoop()
     else if (! _invalid)
     {
         drawScene();
-     
+
         // release the objects
-        PoolManager::sharedPoolManager()->pop();        
+        PoolManager::sharedPoolManager()->pop();
     }
+
+    inMainLoop = false;
 }
 
 void DisplayLinkDirector::stopAnimation()
@@ -1016,7 +1022,7 @@ void DisplayLinkDirector::setAnimationInterval(double value)
     {
         stopAnimation();
         startAnimation();
-    }    
+    }
 }
 
 NS_CC_END
