@@ -876,6 +876,7 @@ JSBool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, ui
     
     do
     {
+        JSAutoCompartment ac(cx, obj);
         if (JS_HasProperty(cx, obj, name, &hasAction) && hasAction) {
             if(!JS_GetProperty(cx, obj, name, &temp_retval)) {
                 break;
@@ -884,7 +885,6 @@ JSBool ScriptingCore::executeFunctionWithOwner(jsval owner, const char *name, ui
                 break;
             }
             
-            JSAutoCompartment ac(cx, obj);
             if (retVal) {
                 bRet = JS_CallFunctionName(cx, obj, name, argc, vp, retVal);
             }
