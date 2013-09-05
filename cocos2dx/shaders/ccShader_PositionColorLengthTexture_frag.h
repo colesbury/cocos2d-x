@@ -33,7 +33,10 @@ varying vec2 v_texcoord;																									\n\
 void main()																													\n\
 {																															\n\
  #if defined GL_OES_standard_derivatives																						\n\
-	 gl_FragColor = v_color*smoothstep(0.0, length(fwidth(v_texcoord)), 1.0 - length(v_texcoord));							\n\
+	 if (length(fwidth(v_texcoord)) > 0.0)																					\n\
+		 gl_FragColor = v_color*smoothstep(0.0, length(fwidth(v_texcoord)), 1.0 - length(v_texcoord));						\n\
+	 else																													\n\
+		 gl_FragColor = v_color;																							\n\
  #else																														\n\
 	gl_FragColor = v_color*step(0.0, 1.0 - length(v_texcoord));																\n\
  #endif																														\n\
