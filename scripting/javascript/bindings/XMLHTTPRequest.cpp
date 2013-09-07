@@ -511,16 +511,8 @@ JS_BINDED_PROP_SET_IMPL(MinXmlHttpRequest, withCredentials)
  */
 JS_BINDED_PROP_GET_IMPL(MinXmlHttpRequest, responseText)
 {
-    JSString* str = JS_NewStringCopyZ(cx, data.str().c_str());//, dataSize);
-
-    if (str) {
-        vp.set(STRING_TO_JSVAL(str));
-        //JS_ReportError(cx, "Result: %s", data.str().c_str());
-        return JS_TRUE;
-    } else {
-        JS_ReportError(cx, "Error trying to create JSString from data");
-        return JS_FALSE;
-    }
+    vp.set(std_string_to_jsval(data.str());
+    return JS_TRUE;
 }
 
 /**
