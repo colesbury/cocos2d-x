@@ -511,7 +511,7 @@ JS_BINDED_PROP_SET_IMPL(MinXmlHttpRequest, withCredentials)
  */
 JS_BINDED_PROP_GET_IMPL(MinXmlHttpRequest, responseText)
 {
-    vp.set(std_string_to_jsval(cx, data.str());
+    vp.set(std_string_to_jsval(cx, data.str()));
     return JS_TRUE;
 }
 
