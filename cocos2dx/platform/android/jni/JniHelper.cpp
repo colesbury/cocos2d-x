@@ -124,6 +124,7 @@ namespace cocos2d {
                                                          "()Ljava/lang/ClassLoader;")) {
             return false;
         }
+        _getclassloaderMethod.env->DeleteLocalRef(_getclassloaderMethod.classID);
 
         jobject _c = cocos2d::JniHelper::getEnv()->CallObjectMethod(nativeactivityinstance,
                                                                     _getclassloaderMethod.methodID);
@@ -139,7 +140,9 @@ namespace cocos2d {
                                                          "(Ljava/lang/String;)Ljava/lang/Class;")) {
             return false;
         }
+        _m.env->DeleteLocalRef(_m.classID);
 
+        _m.env->DeleteLocalRef(JniHelper::classloader);
         JniHelper::classloader = _c;
         JniHelper::loadclassMethod_methodID = _m.methodID;
 

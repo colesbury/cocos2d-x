@@ -527,6 +527,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
                     ccxhelperInit.env->CallStaticVoidMethod(ccxhelperInit.classID,
                                                             ccxhelperInit.methodID,
                                                             app->activity->clazz);
+                    ccxhelperInit.env->DeleteLocalRef(ccxhelperInit.classID);
 
                     cocos_init(d, app);
                 }
