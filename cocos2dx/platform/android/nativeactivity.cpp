@@ -75,6 +75,9 @@ static char* editboxText = NULL;
 extern EditTextCallback s_pfEditTextCallback;
 extern void* s_ctx;
 
+void __shapejam_execute_pending_functions();
+cocos2d::Point __touch_offset = cocos2d::Point::ZERO;
+
 extern "C" {
 	JNIEXPORT void JNICALL Java_org_cocos2dx_lib_Cocos2dxHelper_nativeSetEditTextDialogResult(JNIEnv * env, jobject obj, jbyteArray text) {	
 		jsize  size = env->GetArrayLength(text);
@@ -124,12 +127,12 @@ static void cocos_init(cocos_dimensions d, struct android_app* app) {
     }
     else
     {
-        cocos2d::GL::invalidateStateCache();
-        cocos2d::ShaderCache::getInstance()->reloadDefaultShaders();
-        cocos2d::DrawPrimitives::init();
-        cocos2d::TextureCache::reloadAllTextures();
-        cocos2d::NotificationCenter::getInstance()->postNotification(EVNET_COME_TO_FOREGROUND, NULL);
-        cocos2d::Director::getInstance()->setGLDefaultValues(); 
+        // cocos2d::GL::invalidateStateCache();
+        // cocos2d::ShaderCache::getInstance()->reloadDefaultShaders();
+        // cocos2d::DrawPrimitives::init();
+        // cocos2d::TextureCache::reloadAllTextures();
+        // cocos2d::NotificationCenter::getInstance()->postNotification(EVNET_COME_TO_FOREGROUND, NULL);
+        // cocos2d::Director::getInstance()->setGLDefaultValues();
     }
 }
 
@@ -162,7 +165,7 @@ static cocos_dimensions engine_init_display(struct engine* engine) {
     EGLint numConfigs;
     EGLConfig config;
     EGLSurface surface;
-    EGLContext context;
+    EGLContext context = engine->context;
 
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
@@ -189,7 +192,9 @@ static cocos_dimensions engine_init_display(struct engine* engine) {
         EGL_NONE
     };
 
-    context = eglCreateContext(display, config, NULL, eglContextAttrs);
+    if (context == EGL_NO_CONTEXT) {
+        context = eglCreateContext(display, config, NULL, eglContextAttrs);
+    }
 
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
         LOGW("Unable to eglMakeCurrent");
@@ -216,11 +221,12 @@ static cocos_dimensions engine_init_display(struct engine* engine) {
  * Invoke the dispatching of the next bunch of Runnables in the Java-Land
  */
 static void dispatch_pending_runnables() {
-    static cocos2d::JniMethodInfo info;
-    static bool initialized = false;
+    static jmethodID methodID = NULL;
+    static jclass classID = NULL;
 
-    if (!initialized) {
-        initialized = cocos2d::JniHelper::getStaticMethodInfo(
+    if (!classID) {
+        cocos2d::JniMethodInfo info;
+        bool initialized = cocos2d::JniHelper::getStaticMethodInfo(
             info,
             "org/cocos2dx/lib/Cocos2dxHelper",
             "dispatchPendingRunnables",
@@ -231,9 +237,13 @@ static void dispatch_pending_runnables() {
             LOGW("Unable to dispatch pending Runnables!");
             return;
         }
+
+        methodID = info.methodID;
+        classID = static_cast<jclass>(info.env->NewGlobalRef(info.classID));
+        info.env->DeleteLocalRef(info.classID);
     }
 
-    info.env->CallStaticVoidMethod(info.classID, info.methodID);
+    cocos2d::JniHelper::getEnv()->CallStaticVoidMethod(classID, methodID);
 }
 
 /**
@@ -296,8 +306,9 @@ static void getTouchPos(AInputEvent *event, int ids[], float xs[], float ys[]) {
     int pointerCount = AMotionEvent_getPointerCount(event);
     for(int i = 0; i < pointerCount; ++i) {
         ids[i] = AMotionEvent_getPointerId(event, i);
-        xs[i] = AMotionEvent_getX(event, i);
-        ys[i] = AMotionEvent_getY(event, i);
+        xs[i] = AMotionEvent_getX(event, i) + __touch_offset.x;
+        ys[i] = AMotionEvent_getY(event, i) + __touch_offset.y;
+        LOGI("getTouchPos(%d) x = %f y = %f", i, xs[i], ys[i]);
     }
 }
 
@@ -316,8 +327,8 @@ static int32_t handle_touch_input(AInputEvent *event) {
         {
             LOG_EVENTS_DEBUG("AMOTION_EVENT_ACTION_DOWN");
             int pointerId = AMotionEvent_getPointerId(event, 0);
-            float xP = AMotionEvent_getX(event,0);
-            float yP = AMotionEvent_getY(event,0);
+            float xP = AMotionEvent_getX(event,0) + __touch_offset.x;
+            float yP = AMotionEvent_getY(event,0) + __touch_offset.y;
 
             LOG_EVENTS_DEBUG("Event: Action DOWN x=%f y=%f pointerID=%d\n",
                  xP, yP, pointerId);
@@ -335,8 +346,8 @@ static int32_t handle_touch_input(AInputEvent *event) {
             LOG_EVENTS_DEBUG("AMOTION_EVENT_ACTION_POINTER_DOWN");
             int pointerIndex = AMotionEvent_getAction(event) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
             int pointerId = AMotionEvent_getPointerId(event, pointerIndex);
-            float xP = AMotionEvent_getX(event,pointerIndex);
-            float yP = AMotionEvent_getY(event,pointerIndex);
+            float xP = AMotionEvent_getX(event,pointerIndex) + __touch_offset.x;
+            float yP = AMotionEvent_getY(event,pointerIndex) + __touch_offset.y;
 
             LOG_EVENTS_DEBUG("Event: Action POINTER DOWN x=%f y=%f pointerID=%d\n",
                  xP, yP, pointerId);
@@ -365,8 +376,8 @@ static int32_t handle_touch_input(AInputEvent *event) {
         {
             LOG_EVENTS_DEBUG("AMOTION_EVENT_ACTION_UP");
             int pointerId = AMotionEvent_getPointerId(event, 0);
-            float xP = AMotionEvent_getX(event,0);
-            float yP = AMotionEvent_getY(event,0);
+            float xP = AMotionEvent_getX(event,0) + __touch_offset.x;
+            float yP = AMotionEvent_getY(event,0) + __touch_offset.y;
             LOG_EVENTS_DEBUG("Event: Action UP x=%f y=%f pointerID=%d\n",
                  xP, yP, pointerId);
             int pId = pointerId;
@@ -383,8 +394,8 @@ static int32_t handle_touch_input(AInputEvent *event) {
             LOG_EVENTS_DEBUG("AMOTION_EVENT_ACTION_POINTER_UP");
             int pointerIndex = AMotionEvent_getAction(event) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
             int pointerId = AMotionEvent_getPointerId(event, pointerIndex);
-            float xP = AMotionEvent_getX(event,pointerIndex);
-            float yP = AMotionEvent_getY(event,pointerIndex);
+            float xP = AMotionEvent_getX(event,pointerIndex) + __touch_offset.x;
+            float yP = AMotionEvent_getY(event,pointerIndex) + __touch_offset.x;
             LOG_EVENTS_DEBUG("Event: Action POINTER UP x=%f y=%f pointerID=%d\n",
                  xP, yP, pointerIndex);
             int pId = pointerId;
@@ -454,8 +465,8 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
     struct engine* engine = (struct engine*)app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
         engine->animating = 1;
-        engine->state.x = AMotionEvent_getX(event, 0);
-        engine->state.y = AMotionEvent_getY(event, 0);
+        engine->state.x = AMotionEvent_getX(event, 0) + __touch_offset.x;
+        engine->state.y = AMotionEvent_getY(event, 0) + __touch_offset.y;
 
         return handle_touch_input(event);
     }
@@ -512,7 +523,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             if (engine->app->window != NULL) {
                 cocos_dimensions d = engine_init_display(engine);
                 if ((d.w > 0) &&
-                    (d.h > 0)) {
+                    (d.h > 0) && !cocos2d::Director::getInstance()->getOpenGLView()) {
                     cocos2d::JniHelper::setJavaVM(app->activity->vm);
                     cocos2d::JniHelper::setClassLoaderFrom(app->activity->clazz);
 
@@ -537,7 +548,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
-            engine_term_display(engine);
+            engine->animating = 0;
             break;
         case APP_CMD_GAINED_FOCUS:
             if (cocos2d::Director::getInstance()->getOpenGLView()) {
@@ -650,13 +661,18 @@ void android_main(struct android_app* state) {
 
             // Check if we are exiting.
             if (state->destroyRequested != 0) {
+                cocos2d::Director::getInstance()->end();
+                cocos2d::Director::getInstance()->mainLoop();
                 engine_term_display(&engine);
 
                 memset(&engine, 0, sizeof(engine));
 
+                cocos2d::JniHelper::getJavaVM()->DetachCurrentThread();
                 return;
             }
         }
+
+        __shapejam_execute_pending_functions();
 
         if (engine.animating) {
             // Done with events; draw next animation frame.
