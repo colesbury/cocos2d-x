@@ -1594,18 +1594,18 @@ jsval ccdictionary_to_jsval(JSContext* cx, Dictionary* dict)
 
 JSBool jsval_to_ccdictionary(JSContext* cx, jsval v, Dictionary** ret) {
 
-    if (JSVAL_IS_NULL(v) || JSVAL_IS_VOID(v))
+    if (v.isNullOrUndefined())
     {
         *ret = NULL;
         return JS_TRUE;
     }
-
-    JSObject* tmp = JSVAL_TO_OBJECT(v);
-    if (!tmp) {
+    if (!v.isObject())
+    {
         LOGD("jsval_to_ccdictionary: the jsval is not an object.");
         return JS_FALSE;
     }
     
+    JSObject* tmp = JSVAL_TO_OBJECT(v);
     JSObject* it = JS_NewPropertyIterator(cx, tmp);
     Dictionary* dict = Dictionary::create();
 
