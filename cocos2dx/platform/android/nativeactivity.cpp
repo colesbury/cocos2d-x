@@ -308,7 +308,7 @@ static void getTouchPos(AInputEvent *event, int ids[], float xs[], float ys[]) {
         ids[i] = AMotionEvent_getPointerId(event, i);
         xs[i] = AMotionEvent_getX(event, i) + __touch_offset.x;
         ys[i] = AMotionEvent_getY(event, i) + __touch_offset.y;
-        LOGI("getTouchPos(%d) x = %f y = %f", i, xs[i], ys[i]);
+        // LOGI("getTouchPos(%d) x = %f y = %f", i, xs[i], ys[i]);
     }
 }
 
