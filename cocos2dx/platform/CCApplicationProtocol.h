@@ -58,6 +58,20 @@ public:
     virtual void applicationWillEnterForeground() = 0;
 
     /**
+     @brief  This function will be called when the application enters background.
+     * @js NA
+     * @lua NA
+     */
+    virtual void applicationWillResignActive() = 0;
+    
+    /**
+     @brief  This function will be called when the application enters foreground.
+     * @js NA
+     * @lua NA
+     */
+    virtual void applicationDidBecomeActive() = 0;
+
+    /**
     @brief    Callback by Director for limit FPS.
     @param interval The time, expressed in seconds, between current frame and next.
     * @js NA

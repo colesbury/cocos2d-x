@@ -102,17 +102,6 @@ bool ClippingNode::init(Node *pStencil)
     
     _alphaThreshold = 1;
     _inverted = false;
-    // get (only once) the number of bits of the stencil buffer
-    static bool once = true;
-    if (once)
-    {
-        glGetIntegerv(GL_STENCIL_BITS, &g_sStencilBits);
-        if (g_sStencilBits <= 0)
-        {
-            CCLOG("Stencil buffer is not enabled.");
-        }
-        once = false;
-    }
     
     return true;
 }
@@ -161,6 +150,18 @@ void ClippingNode::drawFullScreenQuadClearStencil()
 
 void ClippingNode::visit()
 {
+    // get (only once) the number of bits of the stencil buffer
+    static bool once = true;
+    if (once)
+    {
+        glGetIntegerv(GL_STENCIL_BITS, &g_sStencilBits);
+        if (g_sStencilBits <= 0)
+        {
+            CCLOG("Stencil buffer is not enabled.: %d", g_sStencilBits);
+        }
+        once = false;
+    }
+
     // if stencil buffer disabled
     if (g_sStencilBits < 1)
     {

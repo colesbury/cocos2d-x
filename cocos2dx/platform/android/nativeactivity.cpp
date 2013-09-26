@@ -518,52 +518,71 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             *((struct saved_state*)engine->app->savedState) = engine->state;
             engine->app->savedStateSize = sizeof(struct saved_state);
             break;
-        case APP_CMD_INIT_WINDOW:
+        case APP_CMD_INIT_WINDOW: {
             // The window is being shown, get it ready.
-            if (engine->app->window != NULL) {
-                cocos_dimensions d = engine_init_display(engine);
-                if ((d.w > 0) &&
-                    (d.h > 0) && !cocos2d::Director::getInstance()->getOpenGLView()) {
-                    cocos2d::JniHelper::setJavaVM(app->activity->vm);
-                    cocos2d::JniHelper::setClassLoaderFrom(app->activity->clazz);
+            cocos_dimensions d = engine_init_display(engine);
+            if ((d.w > 0) &&
+                (d.h > 0) && !cocos2d::Director::getInstance()->getOpenGLView()) {
+                cocos2d::JniHelper::setJavaVM(app->activity->vm);
+                cocos2d::JniHelper::setClassLoaderFrom(app->activity->clazz);
 
-                    // call Cocos2dxHelper.init()
-                    cocos2d::JniMethodInfo ccxhelperInit;
-                    if (!cocos2d::JniHelper::getStaticMethodInfo(ccxhelperInit,
-                                                                 "org/cocos2dx/lib/Cocos2dxHelper",
-                                                                 "init",
-                                                                 "(Landroid/app/Activity;)V")) {
-                        LOGI("cocos2d::JniHelper::getStaticMethodInfo(ccxhelperInit) FAILED");
-                    }
-                    ccxhelperInit.env->CallStaticVoidMethod(ccxhelperInit.classID,
-                                                            ccxhelperInit.methodID,
-                                                            app->activity->clazz);
-                    ccxhelperInit.env->DeleteLocalRef(ccxhelperInit.classID);
-
-                    cocos_init(d, app);
+                // call Cocos2dxHelper.init()
+                cocos2d::JniMethodInfo ccxhelperInit;
+                if (!cocos2d::JniHelper::getStaticMethodInfo(ccxhelperInit,
+                                                             "org/cocos2dx/lib/Cocos2dxHelper",
+                                                             "init",
+                                                             "(Landroid/app/Activity;)V")) {
+                    LOGI("cocos2d::JniHelper::getStaticMethodInfo(ccxhelperInit) FAILED");
                 }
-                engine->animating = 1;
-                engine_draw_frame(engine);
+                ccxhelperInit.env->CallStaticVoidMethod(ccxhelperInit.classID,
+                                                        ccxhelperInit.methodID,
+                                                        app->activity->clazz);
+                ccxhelperInit.env->DeleteLocalRef(ccxhelperInit.classID);
+
+                cocos_init(d, app);
             }
+
+            cocos2d::Application::getInstance()->applicationWillEnterForeground();
+            engine->animating = 1;
+            engine_draw_frame(engine);
+
+            cocos2d::JniMethodInfo info;
+            cocos2d::JniHelper::getStaticMethodInfo(info, "com/jamlabsinc/shapejam/ShapeJam", "surfaceCreatedDone", "()V");
+            info.env->CallStaticVoidMethod(info.classID, info.methodID);
+            info.env->DeleteLocalRef(info.classID);
+        }
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
             engine->animating = 0;
             break;
-        case APP_CMD_GAINED_FOCUS:
-            if (cocos2d::Director::getInstance()->getOpenGLView()) {
+        case APP_CMD_START:
+            if (engine->app->window) {
                 cocos2d::Application::getInstance()->applicationWillEnterForeground();
-				engine->animating = 1;
+                engine->animating = 1;
             }
-
             break;
-        case APP_CMD_LOST_FOCUS:
+        case APP_CMD_STOP:
             cocos2d::Application::getInstance()->applicationDidEnterBackground();
             cocos2d::NotificationCenter::getInstance()->postNotification(EVENT_COME_TO_BACKGROUND, NULL);
 
             // Also stop animating.
             engine->animating = 0;
             engine_draw_frame(engine);
+            break;
+        case APP_CMD_PAUSE:
+            CCLOG("APP_CMD_PAUSE");
+            break;
+        case APP_CMD_RESUME:
+            CCLOG("APP_CMD_RESUME");
+            break;
+        case APP_CMD_GAINED_FOCUS:
+            CCLOG("APP_CMD_GAINED_FOCUS");
+            cocos2d::Application::getInstance()->applicationDidBecomeActive();
+            break;
+        case APP_CMD_LOST_FOCUS:
+            CCLOG("APP_CMD_LOST_FOCUS");
+            cocos2d::Application::getInstance()->applicationWillResignActive();
             break;
     }
 }
