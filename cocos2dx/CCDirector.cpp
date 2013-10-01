@@ -567,7 +567,7 @@ void Director::runWithScene(Scene *scene)
 
 void Director::replaceScene(Scene *scene)
 {
-    CCASSERT(_runningScene, "Use runWithScene: instead to start the director");
+    CCASSERT(_runningScene || _nextScene, "Use runWithScene: instead to start the director");
     CCASSERT(scene != nullptr, "the scene should not be null");
 
     unsigned int index = _scenesStack->count();
