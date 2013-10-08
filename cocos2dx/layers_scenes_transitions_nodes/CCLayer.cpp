@@ -819,6 +819,18 @@ void LayerColor::setOpacity(GLubyte opacity)
     updateColor();
 }
 
+void LayerColor::updateDisplayedOpacity(GLubyte parentOpacity)
+{
+    LayerRGBA::updateDisplayedOpacity(parentOpacity);
+    updateColor();
+}
+
+void LayerColor::updateDisplayedColor(const Color3B& parentColor)
+{
+    LayerRGBA::updateDisplayedColor(parentColor);
+    updateColor();
+}
+
 //
 // LayerGradient
 // 

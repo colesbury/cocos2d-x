@@ -314,6 +314,8 @@ public:
     virtual void draw() override;
     virtual void setColor(const Color3B &color) override;
     virtual void setOpacity(GLubyte opacity) override;
+    virtual void updateDisplayedOpacity(GLubyte parentOpacity) override;
+    virtual void updateDisplayedColor(const Color3B& parentColor) override;
     virtual void setContentSize(const Size & var) override;
     /** BlendFunction. Conforms to BlendProtocol protocol */
     /**
