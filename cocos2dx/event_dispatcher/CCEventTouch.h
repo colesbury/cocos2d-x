@@ -61,7 +61,7 @@ public:
     void setTouches(const std::vector<Touch*>& touches) { _touches = touches; };
 #endif
     
-private:
+public:
     EventCode _eventCode;
     std::vector<Touch*> _touches;
 
