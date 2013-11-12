@@ -519,10 +519,13 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             engine->app->savedStateSize = sizeof(struct saved_state);
             break;
         case APP_CMD_INIT_WINDOW: {
+            CCLOG("APP_CMD_INIT_WINDOW");
             // The window is being shown, get it ready.
             cocos_dimensions d = engine_init_display(engine);
+            CCLOG("APP_CMD_INIT_WINDOW getOpenGLView: %d", !!cocos2d::Director::getInstance()->getOpenGLView());
             if ((d.w > 0) &&
-                (d.h > 0) && !cocos2d::Director::getInstance()->getOpenGLView()) {
+                (d.h > 0)) {
+                CCLOG("APP_CMD_INIT_WINDOW: setJavaVM");
                 cocos2d::JniHelper::setJavaVM(app->activity->vm);
                 cocos2d::JniHelper::setClassLoaderFrom(app->activity->clazz);
 
