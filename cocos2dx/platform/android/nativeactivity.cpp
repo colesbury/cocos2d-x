@@ -75,6 +75,8 @@ static char* editboxText = NULL;
 extern EditTextCallback s_pfEditTextCallback;
 extern void* s_ctx;
 
+static bool initializedVM = false;
+
 void __shapejam_execute_pending_functions();
 cocos2d::Point __touch_offset = cocos2d::Point::ZERO;
 
@@ -519,13 +521,13 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             engine->app->savedStateSize = sizeof(struct saved_state);
             break;
         case APP_CMD_INIT_WINDOW: {
-            CCLOG("APP_CMD_INIT_WINDOW");
+            pthread_t thisthread = pthread_self();
+            CCLOG("APP_CMD_INIT_WINDOW pthread_self() = %X initialized = %d", thisthread, initializedVM);
             // The window is being shown, get it ready.
             cocos_dimensions d = engine_init_display(engine);
-            CCLOG("APP_CMD_INIT_WINDOW getOpenGLView: %d", !!cocos2d::Director::getInstance()->getOpenGLView());
             if ((d.w > 0) &&
-                (d.h > 0)) {
-                CCLOG("APP_CMD_INIT_WINDOW: setJavaVM");
+                (d.h > 0) && !initializedVM) {
+                initializedVM = true;
                 cocos2d::JniHelper::setJavaVM(app->activity->vm);
                 cocos2d::JniHelper::setClassLoaderFrom(app->activity->clazz);
 
@@ -596,6 +598,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
  * event loop for receiving input events and doing other things.
  */
 void android_main(struct android_app* state) {
+    pthread_t thisthread = pthread_self();
+    CCLOG("android_main pthread_self() = %X", thisthread);
 
     // Make sure glue isn't stripped.
     app_dummy();
@@ -690,6 +694,7 @@ void android_main(struct android_app* state) {
                 memset(&engine, 0, sizeof(engine));
 
                 cocos2d::JniHelper::getJavaVM()->DetachCurrentThread();
+                initializedVM = false;
                 return;
             }
         }

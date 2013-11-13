@@ -142,8 +142,8 @@ namespace cocos2d {
         }
         _m.env->DeleteLocalRef(_m.classID);
 
-        _m.env->DeleteLocalRef(JniHelper::classloader);
-        JniHelper::classloader = _c;
+        _m.env->DeleteGlobalRef(JniHelper::classloader);
+        JniHelper::classloader = _m.env->NewGlobalRef(_c);
         JniHelper::loadclassMethod_methodID = _m.methodID;
 
         return true;
